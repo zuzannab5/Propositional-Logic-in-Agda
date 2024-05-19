@@ -2,6 +2,7 @@ module main where
 
 open import Data.Bool renaming (_∧_ to _`and`_ ; _∨_ to _`or`_)
 open import Data.Fin hiding (_+_)
+open import Data.Fin hiding (_<_ ; _≤_)
 open import Data.Nat
 open import Data.Product
 open import Function using (_∘_; id)
@@ -108,4 +109,39 @@ example' = ⇒-i
                  var)
                (∧-e₁
                  var))
+
+
+-- typ wartościowanie 
+Val : Set
+Val = Fin n → Bool
+
+-- nadanie znaczenia formułom
+⟦_⟧ : Props n → Val → Bool
+⟦ ⊥       ⟧ ρ = false
+⟦ ⊤       ⟧ ρ = true
+⟦ patom x ⟧ ρ = ρ x
+⟦ ~ φ     ⟧ ρ = not (⟦ φ ⟧ ρ)
+⟦ φ₁ ∨ φ₂ ⟧ ρ = ⟦ φ₁ ⟧ ρ `or`  ⟦ φ₂ ⟧ ρ
+⟦ φ₁ ∧ φ₂ ⟧ ρ = ⟦ φ₁ ⟧ ρ `and` ⟦ φ₂ ⟧ ρ
+⟦ φ₁ ⇒ φ₂ ⟧ ρ = not (⟦ φ₁ ⟧ ρ) `or` ⟦ φ₂ ⟧ ρ 
+
+--The meaning of a context is just the conjuction of the meanings of its formulas.
+⟦_⟧ᶜ : {l : ℕ} → Cxt l → Val → Bool
+⟦ ∅      ⟧ᶜ ρ = true
+⟦ xs ∙ x ⟧ᶜ ρ = ⟦ xs ⟧ᶜ ρ `and` ⟦ x ⟧ ρ
+
+--This relation states that for all valuations, 
+--if all formulas in the context evaluate to true
+--then the conclusion also evaluates to true.
+_⊨_ : {l : ℕ} → Cxt l → Props n → Set
+Γ ⊨ ψ = ∀ ρ → ⟦ Γ ⟧ᶜ ρ ≡ true → ⟦ ψ ⟧ ρ ≡ true
+
+infix 5 _⊨_
+
+---------------
+-- zgodność
+---------------
+
+--twierdzenie o zgodności
+postulate soundness : ∀ {l}{Γ : Cxt l}{ψ : Props n} → Γ ⊢ ψ → Γ ⊨ ψ
 
