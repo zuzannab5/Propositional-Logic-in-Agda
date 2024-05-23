@@ -145,3 +145,18 @@ infix 5 _⊨_
 --twierdzenie o zgodności
 postulate soundness : ∀ {l}{Γ : Cxt l}{ψ : Props n} → Γ ⊢ ψ → Γ ⊨ ψ
 
+---------------
+--zupełność
+---------------
+
+--twierdzenie o zupełności
+postulate completeness : ∀{l}{Γ : Cxt l}{φ : Props n} → Γ ⊨ φ → Γ ⊢ φ
+
+postulate _⇛_          : ∀{l}(Γ : Cxt l)(ψ : Props n) → Props n
+
+postulate lemat1       : ∀{l}{Γ : Cxt l}{ψ : Props n} → Γ ⊨ ψ → ∅ ⊨ Γ ⇛ ψ
+
+postulate lemat2       : ∀{η : Props n} → ∅ ⊨ η → ∅ ⊢ η
+
+postulate lemat3       : ∀{l}{Γ : Cxt l}{ψ : Props n} → ∅ ⊢ (Γ ⇛ ψ) → Γ ⊢ ψ
+
