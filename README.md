@@ -2,8 +2,8 @@
 
 Commity
 
-- Z dużej litery
-- Po polsku
+- z wielkiej litery
+- po polsku
 - bezosobowo
 
 ## Wstęp
@@ -22,7 +22,7 @@ Twierdzenie o zupełności składa się z obu powyższych twierdzeń.
 
 ## Twierdzenie o zupełności
 
-W tej sekcji podamy definicje potrzebne do zrozumienia problemu oraz dowodu twierdzenia o zupełności
+W tej sekcji podamy definicje potrzebne do zrozumienia problemu oraz dowodu twierdzenia o zupełności.
 
 #### Definicja 1
 
@@ -38,7 +38,7 @@ Kontekstem nazywamy zbiór wszystkich przesłanek w sekwencji. Sekwencja $\phi_1
 
 #### Definicja 4
 
-Jeśli dla każdego wartościowania, w którym kontekst $\Gamma$ jest prawdziwy, $\psi$ także jest prawdziwe, to mówimy że $\Gamma$ semantycznie implikuje $\psi$. Oznacza się to jako $\Gamma\vDash\psi$
+Jeśli dla każdego wartościowania, w którym kontekst $\Gamma$ jest prawdziwy, $\psi$ także jest prawdziwe, to mówimy że $\Gamma$ semantycznie implikuje $\psi$. Oznacza się to jako $\Gamma\vDash\psi$.
 
 Korzystając z powyższych definicji możemy sformułować zgodność i pełność:
 
