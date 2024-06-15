@@ -8,7 +8,7 @@ Commity
 
 ## Wstęp
 
-Celem tego projektu jest formalizacja logiki klasycznego rachunku zdań oraz udowownienie twierdzenia o zupełności. Twierdzenie to można nieformalnie zapisać jako:
+Celem tego projektu jest formalizacja logiki klasycznego rachunku zdań oraz udowodnienie twierdzenia o zupełności. Twierdzenie to można nieformalnie zapisać jako:
 
 #### Zgodność
 
