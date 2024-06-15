@@ -1,12 +1,12 @@
 module main where
 
 open import Data.Bool renaming (_∧_ to _`and`_ ; _∨_ to _`or`_)
-open import Data.Fin hiding (_+_)
+open import Data.Fin hiding (_+_;_<_ ; _≤_)
 open import Data.Fin hiding (_<_ ; _≤_)
 open import Data.Nat
 open import Data.Product
 open import Function using (_∘_; id)
-open import Relation.Binary.PropositionalEquality
+open import Relation.Binary.PropositionalEquality renaming (sym to _⁻¹; trans to _◾_)
 
 -- We use the following notational conventions:
     -- Γ contexts
@@ -115,7 +115,7 @@ example' = ⇒-i
 Val : Set
 Val = Fin n → Bool
 
--- nadanie znaczenia formułom
+-- nadanie znaczenia formułom (przyjmuje formułę i wartościowanie zmiennych zwraca obliczoną wartość logiczną)
 ⟦_⟧ : Props n → Val → Bool
 ⟦ ⊥       ⟧ ρ = false
 ⟦ ⊤       ⟧ ρ = true
@@ -125,14 +125,15 @@ Val = Fin n → Bool
 ⟦ φ₁ ∧ φ₂ ⟧ ρ = ⟦ φ₁ ⟧ ρ `and` ⟦ φ₂ ⟧ ρ
 ⟦ φ₁ ⇒ φ₂ ⟧ ρ = not (⟦ φ₁ ⟧ ρ) `or` ⟦ φ₂ ⟧ ρ 
 
---The meaning of a context is just the conjuction of the meanings of its formulas.
+-- The meaning of a context is just the conjuction of the meanings of its formulas.
+-- nadanie znaczenia kontekstom - koniunkcja znaczenia ich formuł
 ⟦_⟧ᶜ : {l : ℕ} → Cxt l → Val → Bool
 ⟦ ∅      ⟧ᶜ ρ = true
 ⟦ xs ∙ x ⟧ᶜ ρ = ⟦ xs ⟧ᶜ ρ `and` ⟦ x ⟧ ρ
 
---This relation states that for all valuations, 
---if all formulas in the context evaluate to true
---then the conclusion also evaluates to true.
+-- This relation states that for all valuations, 
+-- if all formulas in the context evaluate to true
+-- then the conclusion also evaluates to true.
 _⊨_ : {l : ℕ} → Cxt l → Props n → Set
 Γ ⊨ ψ = ∀ ρ → ⟦ Γ ⟧ᶜ ρ ≡ true → ⟦ ψ ⟧ ρ ≡ true
 
@@ -143,7 +144,65 @@ infix 5 _⊨_
 ---------------
 
 --twierdzenie o zgodności
-postulate soundness : ∀ {l}{Γ : Cxt l}{ψ : Props n} → Γ ⊢ ψ → Γ ⊨ ψ
+soundness : ∀ {l}{Γ : Cxt l}{ψ : Props n} → Γ ⊢ ψ → Γ ⊨ ψ
+soundness {Γ = Γ ∙ ψ} var ρ x  with ⟦ Γ ⟧ᶜ ρ | ⟦ ψ ⟧ ρ
+...         | true | true = refl
+...         | true | false = x
+...         | false | true = refl
+...         | false | false = x
+
+-- σ = Γ ⊢ ψ
+soundness {Γ = Γ ∙ ψ} (weaken σ) ρ x with ⟦ Γ ⟧ᶜ ρ | inspect ⟦ Γ ⟧ᶜ ρ
+...         | true | [ ⟦Γ⟧≡true ]  = soundness σ ρ ⟦Γ⟧≡true
+...         | false | [ ⟦Γ⟧≡false ]  = soundness σ ρ (⟦Γ⟧≡false ◾ x)
+
+soundness ⊤-i = λ ρ _ → refl
+
+-- ?
+soundness  (⊥-e σ) ρ x with soundness σ ρ x
+... | ()
+
+-- soundness {Γ = Γ} {~ ψ} (~-i σ) ρ x with ⟦ Γ ⟧ᶜ ρ |  ⟦ ψ ⟧ ρ  | inspect ⟦ Γ ⟧ᶜ ρ 
+-- ... | true | true |  [ ⟦Γ⟧≡true ] = {!  !}
+-- ... | true | false |  [ ⟦Γ⟧≡true ]  = x
+-- ???
+soundness {Γ = Γ} {~ ψ} (~-i σ) ρ x
+  with ⟦ Γ ⟧ᶜ ρ | inspect ⟦ Γ ⟧ᶜ ρ | ⟦ ψ ⟧ ρ | inspect ⟦ ψ ⟧ ρ
+...  | true     | [ ⟦Γ⟧≡true ]     | true    | [ ⟦ψ⟧≡true ]
+
+  = soundness σ ρ (subst₂ (λ ⟦Γ⟧ ⟦ψ⟧ → ⟦Γ⟧ `and` ⟦ψ⟧ ≡ true) (⟦Γ⟧≡true ⁻¹) (⟦ψ⟧≡true ⁻¹) refl)
+                          
+...  | true     | [ _ ]            | false   | [ _ ] = x
+
+soundness {Γ = Γ} {~ ψ} (~-i σ) ρ () | false | [ _ ] | _ | [ _ ]
+
+-- Γ ⊢ ψ → Γ ⊢ ~ ψ
+soundness {Γ = Γ} (~-e {ψ = ψ} σ₁ σ₂) ρ x with ⟦ Γ ⟧ᶜ ρ | inspect ⟦ Γ ⟧ᶜ ρ | ⟦ ψ ⟧ ρ | inspect ⟦ ψ ⟧ ρ
+...     | true     | [ ⟦Γ⟧≡true ]     | true    | [ ⟦ψ⟧≡true  ] 
+            = cong not (⟦ψ⟧≡true ⁻¹) ◾ soundness σ₂ ρ ⟦Γ⟧≡true
+
+...     | false | [ _ ] | true | [ _ ] = x
+...     | true | [ ⟦Γ⟧≡true ] | false | [ ⟦ψ⟧≡false ] = (⟦ψ⟧≡false ⁻¹) ◾ soundness σ₁ ρ ⟦Γ⟧≡true
+
+-- ?????
+soundness {Γ = Γ} {φ ⇒ ψ} (⇒-i σ) ρ _
+  with ⟦ Γ ⟧ᶜ ρ | inspect ⟦ Γ ⟧ᶜ ρ | ⟦ φ ⟧ ρ | inspect ⟦ φ ⟧ ρ
+...  | true     | [ ⟦Γ⟧≡true ]     | true    | [ ⟦ψ⟧≡true ]
+
+  = soundness σ ρ (subst₂ (λ ⟦Γ⟧ ⟦ψ⟧ → ⟦Γ⟧ `and` ⟦ψ⟧ ≡ true) (⟦Γ⟧≡true ⁻¹) (⟦ψ⟧≡true ⁻¹) refl)
+  
+...  | true     | [ _ ]            | false   | [ _ ] = refl
+
+soundness {Γ = Γ} {φ ⇒ ψ} (⇒-i σ) ρ () | false | [ _ ] | _ | [ _ ]
+
+soundness {ψ = ψ} (⇒-e {φ = φ} σ₁ σ₂) ρ x = {!   !}
+soundness {ψ = φ₁ ∧ φ₂} (∧-i σ₁ σ₂) ρ ⟦Γ⟧≡true = {!   !}
+soundness (∧-e₁ x) = {!   !}
+soundness (∧-e₂ x) = {!   !}
+soundness (∨-i₁ x) = {!   !}
+soundness (∨-i₂ x) = {!   !}
+soundness (∨-e x x₁ x₂) = {!   !}
+soundness lem = {!   !}
 
 ---------------
 --zupełność
