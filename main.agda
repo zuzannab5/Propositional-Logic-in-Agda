@@ -143,7 +143,9 @@ infix 5 _⊨_
 -- zgodność
 ---------------
 
---twierdzenie o zgodności
+-- twierdzenie o zgodności
+-- dowód wzorowany na podstawie repozytorium dołączonym do pracy : https://bitbucket.org/Leran/propositional-logic/src/master/Soundness.agda
+
 soundness : ∀ {l}{Γ : Cxt l}{ψ : Props n} → Γ ⊢ ψ → Γ ⊨ ψ
 soundness {Γ = Γ ∙ ψ} var ρ x  with ⟦ Γ ⟧ᶜ ρ | ⟦ ψ ⟧ ρ
 ...         | true | true = refl
@@ -158,14 +160,9 @@ soundness {Γ = Γ ∙ ψ} (weaken σ) ρ x with ⟦ Γ ⟧ᶜ ρ | inspect ⟦ 
 
 soundness ⊤-i = λ ρ _ → refl
 
--- ?
 soundness  (⊥-e σ) ρ x with soundness σ ρ x
 ... | ()
 
--- soundness {Γ = Γ} {~ ψ} (~-i σ) ρ x with ⟦ Γ ⟧ᶜ ρ |  ⟦ ψ ⟧ ρ  | inspect ⟦ Γ ⟧ᶜ ρ 
--- ... | true | true |  [ ⟦Γ⟧≡true ] = {!  !}
--- ... | true | false |  [ ⟦Γ⟧≡true ]  = x
--- ???
 soundness {Γ = Γ} {~ ψ} (~-i σ) ρ x
   with ⟦ Γ ⟧ᶜ ρ | inspect ⟦ Γ ⟧ᶜ ρ | ⟦ ψ ⟧ ρ | inspect ⟦ ψ ⟧ ρ
 ...  | true     | [ ⟦Γ⟧≡true ]     | true    | [ ⟦ψ⟧≡true ]
@@ -184,7 +181,6 @@ soundness {Γ = Γ} (~-e {ψ = ψ} σ₁ σ₂) ρ x with ⟦ Γ ⟧ᶜ ρ | ins
 ...     | false | [ _ ] | true | [ _ ] = x
 ...     | true | [ ⟦Γ⟧≡true ] | false | [ ⟦ψ⟧≡false ] = (⟦ψ⟧≡false ⁻¹) ◾ soundness σ₁ ρ ⟦Γ⟧≡true
 
--- ?????
 soundness {Γ = Γ} {φ ⇒ ψ} (⇒-i σ) ρ _
   with ⟦ Γ ⟧ᶜ ρ | inspect ⟦ Γ ⟧ᶜ ρ | ⟦ φ ⟧ ρ | inspect ⟦ φ ⟧ ρ
 ...  | true     | [ ⟦Γ⟧≡true ]     | true    | [ ⟦ψ⟧≡true ]
@@ -195,21 +191,52 @@ soundness {Γ = Γ} {φ ⇒ ψ} (⇒-i σ) ρ _
 
 soundness {Γ = Γ} {φ ⇒ ψ} (⇒-i σ) ρ () | false | [ _ ] | _ | [ _ ]
 
-soundness {ψ = ψ} (⇒-e {φ = φ} σ₁ σ₂) ρ x = {!   !}
-soundness {ψ = φ₁ ∧ φ₂} (∧-i σ₁ σ₂) ρ ⟦Γ⟧≡true = {!   !}
-soundness (∧-e₁ x) = {!   !}
-soundness (∧-e₂ x) = {!   !}
-soundness (∨-i₁ x) = {!   !}
-soundness (∨-i₂ x) = {!   !}
-soundness (∨-e x x₁ x₂) = {!   !}
-soundness lem = {!   !}
+soundness {ψ = ψ} (⇒-e {φ = φ} σ₁ σ₂) ρ x   with ⟦ ψ ⟧ ρ | inspect ⟦ ψ ⟧ ρ | ⟦ φ ⟧ ρ | inspect ⟦ φ ⟧ ρ 
+... | true     | [ ⟦ψ⟧≡true ]     | true    | [ ⟦φ⟧≡true ] = refl
+... | false     | [ ⟦ψ⟧≡false ]      | true    | [ ⟦φ⟧≡true ] = subst₂ (λ ⟦φ⟧ ⟦ψ⟧ → not ⟦φ⟧ `or` ⟦ψ⟧ ≡ true) ⟦φ⟧≡true ⟦ψ⟧≡false (soundness σ₁ ρ x)
+... | true     | [ ⟦ψ⟧≡true ]     | false    | [ ⟦φ⟧≡false ] = refl
+... | false     | [ ⟦ψ⟧≡false ]      | false    | [ ⟦φ⟧≡false ] = (⟦φ⟧≡false ⁻¹) ◾ (soundness σ₂ ρ x)
 
----------------
---zupełność
----------------
+soundness {ψ = φ₁ ∧ φ₂} (∧-i σ₁ σ₂) ρ x   with ⟦ φ₁ ⟧ ρ | inspect ⟦ φ₁ ⟧ ρ | ⟦ φ₂ ⟧ ρ | inspect ⟦ φ₂ ⟧ ρ
+...  | true     | [ _ ]            | true     | [ _ ]          = refl
+...  | true     | [ _ ]            | false    | [ ⟦φ₂⟧≡false ] = (⟦φ₂⟧≡false ⁻¹) ◾ soundness σ₂ ρ x
+...  | false    | [ ⟦φ₁⟧≡false ]   | _        | [ _ ]          = (⟦φ₁⟧≡false ⁻¹) ◾ soundness σ₁ ρ x
 
---twierdzenie o zupełności
-postulate completeness : ∀{l}{Γ : Cxt l}{φ : Props n} → Γ ⊨ φ → Γ ⊢ φ
+soundness {ψ = φ} (∧-e₁ {ψ = ψ} σ) ρ x  with ⟦ φ ⟧ ρ | inspect ⟦ φ ⟧ ρ
+...  | true    | [ _ ]  = refl
+...  | false    | [ ⟦φ⟧≡false  ]  = subst (λ ⟦φ⟧ → ⟦φ⟧ `and` ⟦ ψ ⟧ ρ ≡ true) ⟦φ⟧≡false (soundness σ ρ x)
+
+soundness {ψ = ψ} (∧-e₂ {φ = φ} σ) ρ x with ⟦ ψ ⟧ ρ | inspect ⟦ ψ ⟧ ρ | ⟦ φ ⟧ ρ | inspect ⟦ φ ⟧ ρ 
+...  | true    | [ _ ]           | _       | [ _ ] = refl
+...  | false   | [ ⟦ψ⟧≡false ]   | true    | [ ⟦φ⟧≡true ] = subst₂ (λ ⟦φ⟧ ⟦ψ⟧ → ⟦φ⟧ `and` ⟦ψ⟧ ≡ true) ⟦φ⟧≡true ⟦ψ⟧≡false (soundness σ ρ x)
+...  | false   | [ ⟦ψ⟧≡false ]   | false    | [ ⟦φ⟧≡false ] = subst₂ (λ ⟦φ⟧ ⟦ψ⟧ → ⟦φ⟧ `and` ⟦ψ⟧ ≡ true) ⟦φ⟧≡false ⟦ψ⟧≡false (soundness σ ρ x)
+
+
+soundness {ψ = φ ∨ ψ} (∨-i₁ σ) ρ x with ⟦ φ ⟧ ρ | inspect ⟦ φ ⟧ ρ | ⟦ ψ ⟧ ρ  
+... | true  | [ _ ]         | _     = refl
+... | false | [ ⟦φ⟧≡false ] | false = (⟦φ⟧≡false ⁻¹) ◾ soundness σ ρ x
+... | false | [ ⟦φ⟧≡false ] | true = refl 
+
+soundness {ψ = φ ∨ ψ} (∨-i₂ σ) ρ x with ⟦ φ ⟧ ρ
+... | true = refl
+... | false = soundness σ ρ x
+
+soundness {ψ = χ} (∨-e {φ = φ} {ψ = ψ} σ₁ σ₂ σ₃) ρ x with ⟦ χ ⟧ ρ | inspect ⟦ χ ⟧ ρ | ⟦ ψ ⟧ ρ | inspect ⟦ ψ ⟧ ρ | ⟦ φ ⟧ ρ | inspect ⟦ φ ⟧ ρ
+...   | true   | [ _ ]           | _       | [ _ ]           | _       | [ _ ] = refl
+...   | false  | [ ⟦χ⟧≡false ]   | false   | [ ⟦ψ⟧≡false ] | false | [ ⟦φ⟧≡false ] = (subst₂ (λ ⟦φ⟧ ⟦ψ⟧ → ⟦φ⟧ `or` ⟦ψ⟧ ≡ false) (⟦φ⟧≡false ⁻¹)  (⟦ψ⟧≡false ⁻¹) refl  ⁻¹) ◾ soundness σ₁ ρ x
+...   | false  | [ ⟦χ⟧≡false ]   | true   | [ ⟦ψ⟧≡true ] | false | [ ⟦φ⟧≡false ] = (⟦χ⟧≡false ⁻¹) ◾ soundness σ₃ ρ (subst₂ (λ ⟦Γ⟧ ⟦ψ⟧ → ⟦Γ⟧ `and` ⟦ψ⟧ ≡ true) (x ⁻¹) (⟦ψ⟧≡true ⁻¹)  refl)
+...   | false  | [ ⟦χ⟧≡false ]   | false   | [ ⟦ψ⟧≡false ] | true | [ ⟦φ⟧≡true ] = (⟦χ⟧≡false ⁻¹) ◾ soundness σ₂ ρ (subst₂ (λ ⟦Γ⟧ ⟦φ⟧ → ⟦Γ⟧ `and` ⟦φ⟧ ≡ true) (x ⁻¹) (⟦φ⟧≡true ⁻¹)  refl)
+...   | false  | [ ⟦χ⟧≡false ]   | true   | [ ⟦ψ⟧≡true  ] | true | [ ⟦φ⟧≡true ] = (⟦χ⟧≡false ⁻¹) ◾ soundness σ₃ ρ (subst₂ (λ ⟦Γ⟧ ⟦ψ⟧ → ⟦Γ⟧ `and` ⟦ψ⟧ ≡ true) (x ⁻¹) (⟦ψ⟧≡true ⁻¹) refl)
+
+soundness {ψ = φ ∨ (~ .φ)} lem ρ _ with (⟦ φ ⟧ ρ)
+... | true  = refl
+... | false = refl
+
+-- -------------
+-- zupełność
+-- -------------
+
+-- twierdzenie o zupełności
 
 postulate _⇛_          : ∀{l}(Γ : Cxt l)(ψ : Props n) → Props n
 
@@ -218,4 +245,8 @@ postulate lemat1       : ∀{l}{Γ : Cxt l}{ψ : Props n} → Γ ⊨ ψ → ∅ 
 postulate lemat2       : ∀{η : Props n} → ∅ ⊨ η → ∅ ⊢ η
 
 postulate lemat3       : ∀{l}{Γ : Cxt l}{ψ : Props n} → ∅ ⊢ (Γ ⇛ ψ) → Γ ⊢ ψ
+
+completeness : ∀{l}{Γ : Cxt l}{φ : Props n} → Γ ⊨ φ → Γ ⊢ φ
+completeness = lemat3 ∘ lemat2 ∘ lemat1
+
 
