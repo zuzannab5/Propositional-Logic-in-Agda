@@ -16,7 +16,7 @@ Jeśli formuła zdaniowa ma dowód wyprowadzony z danych przesłanek, to wszystk
 
 #### Pełność
 
-Jeśli dla każdego wartościowania, dla którego aksiomaty i przesłanki są prawdziwe fromuła zdaniowa również jest prawdziwa, to zawsze jest możliwe skonstruowanie dowodu tej formuły poprzez zastosowanie zasad wnioskowania na danych przesłankach.
+Jeśli dla każdego wartościowania, dla którego aksjomaty i przesłanki są prawdziwe, formuła zdaniowa również jest prawdziwa, to zawsze jest możliwe skonstruowanie dowodu tej formuły poprzez zastosowanie zasad wnioskowania na danych przesłankach.
 
 Twierdzenie o zupełności składa się z obu powyższych twierdzeń.
 
@@ -26,7 +26,7 @@ W tej sekcji podamy definicje potrzebne do zrozumienia problemu oraz dowodu twie
 
 #### Definicja 1
 
-Sekwencją nazywamy zbiór formuł $\phi_1,\phi_2,\dots,\phi_n$, nazywanych przesłankami oraz formułę $\psi$ nazywaną wnioskiem.
+Sekwencją nazywamy zbiór formuł $\phi_1,\phi_2,\dots,\phi_n$ nazywanych przesłankami oraz formułę $\psi$ nazywaną wnioskiem.
 
 #### Definicja 2
 
