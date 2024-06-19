@@ -232,21 +232,24 @@ soundness {ψ = φ ∨ (~ .φ)} lem ρ _ with (⟦ φ ⟧ ρ)
 ... | true  = refl
 ... | false = refl
 
+
 -- -------------
--- zupełność
+-- pełność
 -- -------------
 
--- twierdzenie o zupełności
+-- ciąg implikacji kolejnych elementów kontekstu i wniosku
+_⇛_ : ∀{l}(Γ : Cxt l)(ψ : Props n) → Props n
+∅ ⇛ ψ = ψ
+(Γ ∙ x) ⇛ ψ = (Γ ⇛ x) ⇒ ψ
 
-postulate _⇛_          : ∀{l}(Γ : Cxt l)(ψ : Props n) → Props n
+--lemat1 : ∀{l}{Γ : Cxt l}{ψ : Props n} → Γ ⊨ ψ → ∅ ⊨ Γ ⇛ ψ
 
-postulate lemat1       : ∀{l}{Γ : Cxt l}{ψ : Props n} → Γ ⊨ ψ → ∅ ⊨ Γ ⇛ ψ
+--lemat2 : ∀{η : Props n} → ∅ ⊨ η → ∅ ⊢ η
 
-postulate lemat2       : ∀{η : Props n} → ∅ ⊨ η → ∅ ⊢ η
+--lemat3 : ∀{l}{Γ : Cxt l}{ψ : Props n} → ∅ ⊢ (Γ ⇛ ψ) → Γ ⊢ ψ
 
-postulate lemat3       : ∀{l}{Γ : Cxt l}{ψ : Props n} → ∅ ⊢ (Γ ⇛ ψ) → Γ ⊢ ψ
-
-completeness : ∀{l}{Γ : Cxt l}{φ : Props n} → Γ ⊨ φ → Γ ⊢ φ
-completeness = lemat3 ∘ lemat2 ∘ lemat1
+-- twierdzenie o pełności
+--completeness : ∀{l}{Γ : Cxt l}{φ : Props n} → Γ ⊨ φ → Γ ⊢ φ 
+--completeness = lemat3 ∘ lemat2 ∘ lemat1
 
 
