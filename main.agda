@@ -240,16 +240,27 @@ soundness {ψ = φ ∨ (~ .φ)} lem ρ _ with (⟦ φ ⟧ ρ)
 -- ciąg implikacji kolejnych elementów kontekstu i wniosku
 _⇛_ : ∀{l}(Γ : Cxt l)(ψ : Props n) → Props n
 ∅ ⇛ ψ = ψ
-(Γ ∙ x) ⇛ ψ = (Γ ⇛ x) ⇒ ψ
+(Γ ∙ x) ⇛ ψ = Γ ⇛ (x ⇒ ψ)
 
---lemat1 : ∀{l}{Γ : Cxt l}{ψ : Props n} → Γ ⊨ ψ → ∅ ⊨ Γ ⇛ ψ
+--lemat1 : ∀{l}{Γ : Cxt l}{ψ : Props n} → Γ ⊨ ψ → ∅ ⊨ (Γ ⇛ ψ)
+--lemat1 {Γ = Γ} {ψ = ψ} Γ⊨ψ ρ emptTrue with ⟦ Γ ⟧ᶜ ρ | ⟦ ψ ⟧ ρ
+----    | true | true = refl
+ --   | true | false = refl
+ --   | false | true = refl
+  --  | false | false = true
+
 
 --lemat2 : ∀{η : Props n} → ∅ ⊨ η → ∅ ⊢ η
+--lemat2 {η} ∅⊨η = ⊥-e {zero} {∅} {η}
 
---lemat3 : ∀{l}{Γ : Cxt l}{ψ : Props n} → ∅ ⊢ (Γ ⇛ ψ) → Γ ⊢ ψ
+
+lemat3 : ∀{l}{Γ : Cxt l}{ψ : Props n} → ∅ ⊢ (Γ ⇛ ψ) → Γ ⊢ ψ
+lemat3 {Γ = ∅} {ψ = ψ} ρ = ρ
+lemat3 {Γ = Γ ∙ x} {ψ = ψ} ρ = ⇒-e (weaken (lemat3 {Γ = Γ} ρ)) var
 
 -- twierdzenie o pełności
 --completeness : ∀{l}{Γ : Cxt l}{φ : Props n} → Γ ⊨ φ → Γ ⊢ φ 
 --completeness = lemat3 ∘ lemat2 ∘ lemat1
 
-
+ 
+ 
